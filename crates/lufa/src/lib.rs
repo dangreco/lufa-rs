@@ -1,5 +1,4 @@
 mod error;
-mod http;
 mod services;
 
 use std::{collections::HashMap, fmt, sync::Arc};
