@@ -16,6 +16,10 @@ use tokio::sync::RwLock;
 
 pub use error::{Error, Result};
 
+pub mod models {
+    pub use lufa_models::*;
+}
+
 const DEFAULT_API_BASE_URL: &str = "https://montreal.lufa.com";
 
 #[derive(Debug, Clone)]

@@ -1,10 +1,9 @@
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use snafu::IntoError;
 
 use crate::{
     error::{LufaError, LufaSnafu, Result, SerdePhpSnafu, UrlEncodingSnafu},
-    Lufa, State,
+    models, Lufa, State,
 };
 
 #[derive(Debug, Clone)]
@@ -35,7 +34,7 @@ impl<'a> AuthService<'a> {
 
         let response = self
             .0
-            ._post_form("/login", &LoginForm { email, password })
+            ._post_form("/login", &models::auth::LoginReqForm { email, password })
             .await?;
 
         // Upon successful login, a cookie, `lufaState`, is sent
@@ -57,8 +56,9 @@ impl<'a> AuthService<'a> {
 
         // The `lufaState` is a PHP-serialized array -- we
         // deserialize it with serde_php
-        let lufa_state: LufaState = serde_php::from_bytes(lufa_state_decoded.as_bytes())
-            .map_err(|e| SerdePhpSnafu.into_error(e.into()))?;
+        let lufa_state: models::cookies::LufaState =
+            serde_php::from_bytes(lufa_state_decoded.as_bytes())
+                .map_err(|e| SerdePhpSnafu.into_error(e.into()))?;
 
         // Modify the client's state
         {
@@ -97,26 +97,6 @@ impl<'a> AuthService<'a> {
 
         Ok(())
     }
-}
-
-#[derive(Debug, Serialize)]
-struct LoginForm {
-    #[serde(rename = "LoginForm[user_email]")]
-    email: String,
-    #[serde(rename = "LoginForm[password]")]
-    password: String,
-}
-
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct LufaState(String, String, i32, LufaStateInfo);
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct LufaStateInfo {
-    user_email: String,
-    first_name: String,
 }
 
 #[cfg(test)]
