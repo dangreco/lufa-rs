@@ -4,91 +4,118 @@ use rusty_money::{iso, Money};
 use serde::Deserialize;
 use serde_aux::prelude::*;
 
-use crate::types;
+use crate::de;
 
+// A CheckoutAmountsItem contains individual
+// pricing information per item in the order.
 #[derive(Deserialize, Debug)]
 pub struct CheckoutAmountsItem {
-    #[serde(rename = "price", deserialize_with = "types::deserialize_money")]
+
+    // The base price of the item, per one item
+    #[serde(rename = "price", deserialize_with = "de::deserialize_money")]
     pub price: Money<'static, iso::Currency>,
 
+    // The quantity of item present in the order
     #[serde(
         rename = "quantity",
         deserialize_with = "deserialize_number_from_string"
     )]
     pub quantity: usize,
 
-    #[serde(rename = "row_total", deserialize_with = "types::deserialize_money")]
+    // The total cost of the item, calculated as price * quanity
+    #[serde(rename = "row_total", deserialize_with = "de::deserialize_money")]
     pub total: Money<'static, iso::Currency>,
 }
 
+// A CheckoutAmounts represents the calculated
+// cost breakdowns in each category for the order,
+// including total, subtotal, taxes, fees, coupons,
+// as well as an itemized list of the pricing of each
+// item in the order.
 #[derive(Deserialize, Debug)]
 pub struct CheckoutAmounts {
-    #[serde(rename = "total", deserialize_with = "types::deserialize_money")]
+    // The total cost of the order
+    #[serde(rename = "total", deserialize_with = "de::deserialize_money")]
     pub total: Money<'static, iso::Currency>,
 
-    #[serde(rename = "subtotal", deserialize_with = "types::deserialize_money")]
+    // The total cost of the items in order prior
+    // to taxes, coupons, etc.
+    #[serde(rename = "subtotal", deserialize_with = "de::deserialize_money")]
     pub subtotal: Money<'static, iso::Currency>,
 
+    // The cost of delivery fees for the order
     #[serde(
         rename = "delivery_fees",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub delivery_fees: Money<'static, iso::Currency>,
 
+    // The amount that the user has to pay off
     #[serde(
         rename = "remaining_balance",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub remaining_balance: Money<'static, iso::Currency>,
 
-    #[serde(rename = "balance", deserialize_with = "types::deserialize_money")]
+    // // TODO -- not sure what this is
+    #[serde(rename = "balance", deserialize_with = "de::deserialize_money")]
     pub balance: Money<'static, iso::Currency>,
 
+    /// TODO -- not sure what this is
     #[serde(
         rename = "consigne_amount",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub consigne_amount: Money<'static, iso::Currency>,
 
-    #[serde(rename = "national_tax", deserialize_with = "types::deserialize_money")]
+    // The national sales tax (GST + HST) for the order 
+    #[serde(rename = "national_tax", deserialize_with = "de::deserialize_money")]
     pub national_tax: Money<'static, iso::Currency>,
 
+    // The provincial sales tax (PST) for the order 
     #[serde(
         rename = "provincial_tax",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub provincial_tax: Money<'static, iso::Currency>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "coupon_discount_amount",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub coupon_discount_amount: Money<'static, iso::Currency>,
 
+    // The contribution/donation amount selected by the user
     #[serde(
         rename = "order_donation",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub order_donation: Money<'static, iso::Currency>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "donation_discount",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub donation_discount: Money<'static, iso::Currency>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "available_weekly",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub available_weekly: Money<'static, iso::Currency>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "remaining_weekly",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub remaining_weekly: Money<'static, iso::Currency>,
 
+    // A HashMap containing the price breakdowns of
+    // items added to the order
     #[serde(rename = "order_details")]
     pub items: HashMap<String, CheckoutAmountsItem>,
 }

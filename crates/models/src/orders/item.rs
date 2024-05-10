@@ -4,69 +4,91 @@ use rusty_money::{iso, Money};
 use serde::Deserialize;
 use serde_aux::prelude::*;
 
-use crate::types;
+use crate::de;
 
+// An OrderItem represents an item from the marketplace
+// that has been added to the user's current order.
+// It contains product information as well as order-specific
+// information such as quantity and pricing details.
 #[derive(Deserialize, Debug)]
 pub struct OrderItem {
+
+    // The product ID of the item
     #[serde(rename = "product_id")]
     pub product_id: String,
 
+    // The name of the item
     #[serde(rename = "p_name")]
     pub name: String,
 
+    // The vendor of the item
     #[serde(rename = "s_name")]
     pub vendor: String,
 
+    // The description of the item.
+    // Note: this is usually null for some reason.
     #[serde(default, rename = "description")]
     pub description: Option<String>,
 
+    // Whether or not the product is on sale.
+    // Note: this is usally null for some reason.
     #[serde(
         default,
         rename = "on_sale",
-        deserialize_with = "types::deserialize_bool"
+        deserialize_with = "de::deserialize_bool"
     )]
     pub on_sale: Option<bool>,
 
+    // The category that the product belongs to
     #[serde(rename = "cat_na")]
     pub category: String,
 
+    // The primary image URL for the product
     #[serde(rename = "image_url")]
     pub image_url: String,
 
+    // Additional image URLs for the product
+    // in different sizes
     #[serde(rename = "image_urls")]
     pub image_urls: HashMap<String, String>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "default_price",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub default_price: Money<'static, iso::Currency>,
 
+    // The product price that is shown on the marketplace
     #[serde(
         rename = "defined_price",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub defined_price: Money<'static, iso::Currency>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "price",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub price: Money<'static, iso::Currency>,
 
+    // TODO -- not sure what this is
     #[serde(
         rename = "paid_price",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub paid_price: Money<'static, iso::Currency>,
 
+    // The price-per-unit price
     #[serde(
         default,
         rename = "avg_p_p",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub ppu_price: Option<Money<'static, iso::Currency>>,
 
+    // The price-per-unit quantity
     #[serde(
         default,
         rename = "avg_p_q",
@@ -74,9 +96,11 @@ pub struct OrderItem {
     )]
     pub ppu_quantity: Option<f64>,
 
+    // The price-per-unit unit
     #[serde(default, rename = "avg_p_u")]
     pub ppu_unit: Option<String>,
 
+    // The quantity of the product added to the user's order
     #[serde(
         default,
         rename = "quantity_in_basket",
@@ -84,6 +108,7 @@ pub struct OrderItem {
     )]
     pub quantity: usize,
 
+    // What the quantity of item is measured in, e.g. "bag", "400g"
     #[serde(rename = "units")]
     pub units: String,
 }

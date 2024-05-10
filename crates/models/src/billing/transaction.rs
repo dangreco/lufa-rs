@@ -3,68 +3,86 @@ use chrono_tz::Tz;
 use rusty_money::{iso, Money};
 use serde::Deserialize;
 
-use crate::types;
+use crate::de;
 
+// A transaction represents a completed payment
+// on the platform
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct Transaction {
+
+    // The order ID to which the transaction
+    // corresponds to
     #[serde(rename = "order_id")]
     pub order_id: String,
 
-    #[serde(rename = "total", deserialize_with = "types::deserialize_money")]
+    // The final total amount charged in the transaction
+    #[serde(rename = "total", deserialize_with = "de::deserialize_money")]
     pub total: Money<'static, iso::Currency>,
 
+    // A short title describing the transaction
     #[serde(rename = "title_string")]
     pub title: String,
 
+    // The date at which the transaction was processed
     #[serde(
         rename = "transaction_time",
-        deserialize_with = "types::deserialize_timestamp"
+        deserialize_with = "de::deserialize_timestamp"
     )]
     pub timestamp: DateTime<Tz>,
 
+    // TODO -- not sure
     #[serde(rename = "transaction_type")]
     pub _type: String,
 
+
+    // The total amount estimated to be charged before packing
+    // and delivery
     #[serde(
         default,
         rename = "total_order_amount",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub total_order_amount: Option<Money<'static, iso::Currency>>,
 
+    // The total estimated cost of the items in the order prior
+    // to packing and delivery
     #[serde(
         default,
         rename = "basket_cost",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub basket_cost: Option<Money<'static, iso::Currency>>,
 
+    // TODO -- not sure
     #[serde(
         default,
         rename = "previous_amount_due",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub previous_amount_due: Option<Money<'static, iso::Currency>>,
 
+    // The amount contributed/donated in this transaction
     #[serde(
         default,
         rename = "donation_amount",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub donation_amount: Option<Money<'static, iso::Currency>>,
 
+    // TODO -- not sure
     #[serde(
         default,
         rename = "charity_received",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub charity_received: Option<Money<'static, iso::Currency>>,
 
+    // TODO -- not sure
     #[serde(
         default,
         rename = "total_consigne_amount",
-        deserialize_with = "types::deserialize_money_optional"
+        deserialize_with = "de::deserialize_money_optional"
     )]
     pub total_consigne_amount: Option<Money<'static, iso::Currency>>,
 }

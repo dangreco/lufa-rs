@@ -1,4 +1,7 @@
 use serde::Deserialize;
+use std::collections::HashMap;
+
+use crate::de;
 
 mod item;
 use item::*;
@@ -6,20 +9,41 @@ use item::*;
 mod amounts;
 use amounts::*;
 
+mod recipe;
+use recipe::*;
+
+// An Order represents the user's current
+// order on the platform. It contains information
+// corresponding to the status of the order,
+// the contents of the order, and the pricing
+// of the order.
 #[derive(Deserialize, Debug)]
 pub struct Order {
+
+    // The ID of the order
     #[serde(rename = "orderId")]
     pub id: String,
 
+    // The status of the order
     #[serde(rename = "orderStatus")]
     pub status: String, // todo!
 
+    // The date at which the order will be delivered
     #[serde(rename = "orderDate")]
     pub date: String, // todo!
 
+    // A list of items in the order
     #[serde(rename = "orderDetails")]
     pub items: Vec<OrderItem>,
 
+    // A list of meal kit recipes in the order
+    #[serde(
+        rename = "orderRecipes",
+        deserialize_with = "de::deserialize_array_or_object"
+    )]
+    pub recipes: HashMap<usize, Recipe>,
+
+    // The price breakdown of the order
     #[serde(rename = "checkoutAmounts")]
     pub amounts: CheckoutAmounts,
 }
@@ -30,8 +54,7 @@ mod tests {
 
     #[test]
     fn test_deserialize() {
-
-      let s = r#"
+        let s = r#"
       {
         "success": true,
         "orderDetails": [
@@ -828,8 +851,7 @@ mod tests {
       }
       "#;
 
-
-      let order: Result<Order, _> = serde_json::from_str(s);
-      assert!(order.is_ok());
+        let order: Result<Order, _> = serde_json::from_str(s);
+        assert!(order.is_ok());
     }
 }

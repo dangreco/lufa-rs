@@ -2,99 +2,132 @@ use chrono::NaiveDate;
 use rusty_money::iso;
 use rusty_money::Money;
 use serde::Deserialize;
+use serde_aux::prelude::*;
 
-use crate::types;
-use crate::utils;
+use crate::de;
 
 mod incentive;
 pub use incentive::*;
 
+// A Profile represents data that is user-specific
 #[derive(Deserialize, Debug)]
 pub struct Profile {
+
+    // The user ID
     #[serde(rename = "user_id")]
     pub user_id: String,
 
+    // The user's first name
+    //
+    // E.g.: "John"
     #[serde(rename = "first_name")]
     pub first_name: String,
 
+    // The user's full name
+    //
+    // E.g.: "John Doe"
     #[serde(rename = "user_name")]
     pub user_name: String,
 
+    // The user's abbreviated name
+    //
+    // E.g.: "John D."
     #[serde(rename = "donation_name")]
     pub donation_name: String,
 
+    // TODO -- not sure
     #[serde(rename = "subscription_type")]
     pub subscription_type: String,
 
-    #[serde(rename = "user_created", deserialize_with = "types::deserialize_date")]
+    // The date at which the user was created
+    #[serde(rename = "user_created", deserialize_with = "de::deserialize_date")]
     pub user_created: NaiveDate,
 
-    #[serde(
-        rename = "user_credits",
-        deserialize_with = "types::deserialize_money"
-    )]
+    // The credits balance for the user. A positive balance 
+    // indicates you are owed money, while a negative balance
+    // indicates that you owe money 
+    #[serde(rename = "user_credits", deserialize_with = "de::deserialize_money")]
     pub user_credits: Money<'static, iso::Currency>,
 
+    // The date at which the user became a superlufavore
     #[serde(
         rename = "became_superlufavore_on",
-        deserialize_with = "types::deserialize_date"
+        deserialize_with = "de::deserialize_date"
     )]
     pub became_superlufavore_on: NaiveDate,
 
-    #[serde(rename = "family_size", deserialize_with = "utils::deserialize_usize")]
+    // The number of people in the user's household
+    #[serde(
+        rename = "family_size",
+        deserialize_with = "deserialize_number_from_string"
+    )]
     pub family_size: usize,
 
-    #[serde(rename = "created", deserialize_with = "types::deserialize_date")]
+    // The date at which the user was created
+    #[serde(rename = "created", deserialize_with = "de::deserialize_date")]
     pub created: NaiveDate,
 
+    // TODO -- not sure
     #[serde(
+        default,
         rename = "giveback_donation_percent",
-        deserialize_with = "types::deserialize_percentage"
+        deserialize_with = "deserialize_option_number_from_string"
     )]
     pub giveback_donation_percent: Option<f64>,
 
+    // TODO -- not sure
     #[serde(rename = "anonymous")]
     pub anonymous: bool,
 
+    // How each weekly subscription order has the base basket
+    // populated
     #[serde(rename = "subscriptions_order_prepopulation_method")]
     pub subscriptions_order_prepopulation_method: String,
 
+    // How each "a-la-carte" order has the base basket
+    // populated
     #[serde(rename = "orders_order_prepopulation_method")]
     pub orders_order_prepopulation_method: String,
 
+    // The minimum required price for a basket order
+    // under the user
     #[serde(
         rename = "min_basket_price",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub min_basket_price: Money<'static, iso::Currency>,
 
+    // TODO -- not sure
     #[serde(rename = "reactivation")]
     pub reactivation: bool,
 
+    // TODO -- not sure
     #[serde(
         rename = "user_free_credits_spendable",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub user_free_credits_spendable: Money<'static, iso::Currency>,
 
+    // TODO -- not sure
     #[serde(
         rename = "user_all_credits_spendable",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub user_all_credits_spendable: Money<'static, iso::Currency>,
-    
+
+    // Incentive data for the user
     #[serde(rename = "incentive_data")]
     pub incentive_data: IncentiveData,
 
-    #[serde(
-        rename = "earnings",
-        deserialize_with = "types::deserialize_money"
-    )]
+    // The projected earnings amount for the giveback program
+    #[serde(rename = "earnings", deserialize_with = "de::deserialize_money")]
     pub earnings: Money<'static, iso::Currency>,
 
+    // TODO -- not sure
     #[serde(default, rename = "dg_company_coordinator")]
     pub dg_company_coordinator: bool,
 
+    // TODO -- not sure
     #[serde(default, rename = "could_give_remaining_balance")]
     pub could_give_remaining_balance: bool,
 }

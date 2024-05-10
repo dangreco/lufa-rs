@@ -4,67 +4,92 @@ use rusty_money::{iso, Money};
 use serde::Deserialize;
 use serde_aux::prelude::*;
 
-use crate::types;
+use crate::de;
 
+// Data corresponding to the Lufa incentive program.
+// Contains various statistics pertaining to the 
+// user's order habits
 #[derive(Deserialize, Debug)]
 pub struct IncentiveData {
+
+    // The current ISO week of the year
     #[serde(
         rename = "iso_week",
         deserialize_with = "deserialize_number_from_string"
     )]
     pub iso_week: u8,
 
+    // The number of baskets ordered this week
+    //
+    // Note: might actually be a boolean on if an order 
+    // was placed during the week, not sure yet.
     #[serde(
         rename = "ordered_this_week",
         deserialize_with = "deserialize_number_from_string"
     )]
     pub ordered_this_week: usize,
 
+    // The amount of weeks that have passed by in 
+    // year the so far
     #[serde(
         rename = "nb_weeks_considered",
         deserialize_with = "deserialize_number_from_string"
     )]
     pub weeks_considered: usize,
 
+    // The amount of weeks that the user has completed
+    // an order
     #[serde(
         rename = "nb_weeks_with_purchase",
         deserialize_with = "deserialize_number_from_string"
     )]
     pub weeks_with_purchase: usize,
 
+    // The total amount spent this year
     #[serde(
         rename = "amount_spent",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub amount_spent: Money<'static, iso::Currency>,
 
+    // The current amount earned for the giveback program
     #[serde(
         rename = "current_earnings",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub current_earnings: Money<'static, iso::Currency>,
 
+    // The projected amount earnined for the giveback program
     #[serde(
         rename = "projected_earnings",
-        deserialize_with = "types::deserialize_money"
+        deserialize_with = "de::deserialize_money"
     )]
     pub projected_earnings: Money<'static, iso::Currency>,
 
+    // The datetime at which the statistics were generated
     #[serde(
         rename = "created_at",
-        deserialize_with = "types::deserialize_timestamp"
+        deserialize_with = "de::deserialize_timestamp"
     )]
     pub created_at: DateTime<Tz>,
 
+    // The datetime at which the statistics were updated
     #[serde(
         rename = "updated_at",
-        deserialize_with = "types::deserialize_timestamp"
+        deserialize_with = "de::deserialize_timestamp"
     )]
     pub updated_at: DateTime<Tz>,
 
+    // A string representing the amount of weeks ordered
+    //
+    // E.g.: "17 out of 19 weeks"
     #[serde(rename = "weeks_ordered")]
     pub weeks_ordered: String,
 
+    // A string representing the percentage of weeks that
+    // the user has completed an order for
+    //
+    // E.g.: "(89% of the time)"
     #[serde(rename = "percentage_of_time")]
     pub percentage_of_time: String,
 }

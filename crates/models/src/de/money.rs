@@ -1,6 +1,11 @@
+// Deserializers for money/currency strings.
+
 use rusty_money::{iso, Money};
 use serde::{Deserialize, Deserializer};
 
+
+// Function to parse a Money instance from a North American-styled currency
+// string, i.e. "." for decimal points, "," for thousands separators.
 fn parse_na<'de, D>(s: &str) -> Result<Money<'static, iso::Currency>, D::Error>
 where
     D: Deserializer<'de>,
@@ -9,6 +14,8 @@ where
     Money::from_str(&cleaned, iso::CAD).map_err(serde::de::Error::custom)
 }
 
+// Function to parse a Money instance from a European-styled currency
+// string, i.e. "," for decimal points, "." for thousands separators.
 fn parse_eu<'de, D>(s: &str) -> Result<Money<'static, iso::Currency>, D::Error>
 where
     D: Deserializer<'de>,
@@ -17,6 +24,15 @@ where
     Money::from_str(&cleaned, iso::CAD).map_err(serde::de::Error::custom)
 }
 
+// Function to parse a Money instance from either a North American or
+// European styled currency string. Examples below:
+//
+// `"$ 1,00" => 1 CAD`
+// `"$ 1.00" => 1 CAD`
+// `"$ 1,000.00" => 1_000 CAD`
+// `"$ 1.000,00" => 1_000 CAD`
+// `"$ 1,000,000.00" => 1_000_000 CAD`
+// `"$ 1.000.000,00" => 1_000_000 CAD`
 fn parse_str<'de, D>(s: &str) -> Result<Money<'static, iso::Currency>, D::Error>
 where
     D: Deserializer<'de>,
@@ -85,6 +101,7 @@ where
     }
 }
 
+// Deserializes a value into a Money instance in CAD
 pub fn deserialize_money<'de, D>(deserializer: D) -> Result<Money<'static, iso::Currency>, D::Error>
 where
     D: Deserializer<'de>,
@@ -107,6 +124,7 @@ where
     }
 }
 
+// Optionally deserializes a value into a Money instance in CAD
 pub fn deserialize_money_optional<'de, D>(
     deserializer: D,
 ) -> Result<Option<Money<'static, iso::Currency>>, D::Error>

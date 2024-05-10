@@ -1,5 +1,14 @@
 use serde::{Deserialize, Deserializer};
 
+// Very generous deserializer of boolean values.
+// This function accepts:
+//   1. String values of the forms:
+//     - "true", "t", "yes", "y", "1" => Some(true)
+//     - "false", "f", "no", "n", "0" => Some(false)
+//   2. Integral values s.t. 0 => Some(false), 1 => Some(true)
+//   3. Decimal values s.t. 0.0 => Some(false), 1.0 => Some(true)
+//   4. Null values => None
+// All other values error.
 pub fn deserialize_bool<'de, D>(deserializer: D) -> Result<Option<bool>, D::Error>
 where
     D: Deserializer<'de>,
