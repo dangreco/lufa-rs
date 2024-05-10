@@ -6,3 +6,6 @@ pub use billing::*;
 
 mod profile;
 pub use profile::*;
+
+mod orders;
+pub use orders::*;

@@ -12,10 +12,9 @@ use crate::{
 pub struct BillingService<'a>(pub(crate) &'a Lufa);
 
 impl<'a> BillingService<'a> {
-
     /// Retrieves the billing data for the currently
     /// logged in user.
-    /// 
+    ///
     /// This function is not to be used by client code,
     /// thus it is not marked as public.
     /// ```
@@ -50,11 +49,11 @@ impl<'a> BillingService<'a> {
     ///   client.auth().login("bob@example.com", "passw0rd").await?;
     ///     
     ///   let cards = client.billing().get_cards().await?;
-    /// 
+    ///
     ///   for (_, card) in cards.into_iter() {
     ///     println!("{} - {}", card.brand, card.last_four);
     ///   }
-    /// 
+    ///
     ///   Ok(())
     /// }
     /// ```
@@ -77,21 +76,20 @@ impl<'a> BillingService<'a> {
     ///   let txs = client.billing().get_transactions().await?;
     ///   
     ///   let max_total = txs.iter()
-    ///     .filter_map(|tx| tx.total)
+    ///     .map(|tx| tx.total.clone())
     ///     .max();
-    /// 
+    ///
     ///   match max_total {
     ///     Some(max) => println!("Maximum total: ${}", max),
     ///     None => println!("No transactions!"),
     ///   }
-    /// 
+    ///
     ///   Ok(())
     /// }
     /// ```
     pub async fn get_transactions(&self) -> Result<Vec<models::billing::Transaction>> {
         self.get_billing_data().await.map(|bd| bd.transactions)
     }
-    
 }
 
 #[cfg(test)]

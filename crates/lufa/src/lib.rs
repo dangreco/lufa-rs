@@ -186,4 +186,8 @@ impl Lufa {
     pub fn profile(&self) -> ProfileService {
         ProfileService(self)
     }
+
+    pub fn orders(&self) -> OrdersService {
+        OrdersService(self)
+    }
 }

@@ -8,7 +8,6 @@ pub use card::*;
 mod transaction;
 pub use transaction::*;
 
-
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct BillingData {

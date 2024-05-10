@@ -50,6 +50,7 @@ mod tests {
         "#;
 
         let card: Result<Card, _> = serde_json::from_str(s);
+        println!("{:?}", card);
         assert!(card.is_ok());
 
         let card = card.unwrap();

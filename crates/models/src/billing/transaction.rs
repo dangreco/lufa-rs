@@ -1,6 +1,9 @@
-use crate::types::{self, Currency, Timestamp};
-
+use chrono::DateTime;
+use chrono_tz::Tz;
+use rusty_money::{iso, Money};
 use serde::Deserialize;
+
+use crate::types;
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
@@ -8,9 +11,8 @@ pub struct Transaction {
     #[serde(rename = "order_id")]
     pub order_id: String,
 
-    #[serde(default)]
-    #[serde(rename = "total", deserialize_with = "types::deserialize_currency")]
-    pub total: Currency,
+    #[serde(rename = "total", deserialize_with = "types::deserialize_money")]
+    pub total: Money<'static, iso::Currency>,
 
     #[serde(rename = "title_string")]
     pub title: String,
@@ -19,49 +21,52 @@ pub struct Transaction {
         rename = "transaction_time",
         deserialize_with = "types::deserialize_timestamp"
     )]
-    pub timestamp: Timestamp,
+    pub timestamp: DateTime<Tz>,
 
     #[serde(rename = "transaction_type")]
     pub _type: String,
 
-    #[serde(default)]
     #[serde(
+        default,
         rename = "total_order_amount",
-        deserialize_with = "types::deserialize_currency"
+        deserialize_with = "types::deserialize_money_optional"
     )]
-    pub total_order_amount: Currency,
+    pub total_order_amount: Option<Money<'static, iso::Currency>>,
 
-    #[serde(default)]
-    #[serde(rename = "basket_cost", deserialize_with = "types::deserialize_currency")]
-    pub basket_cost: Currency,
-
-    #[serde(default)]
     #[serde(
+        default,
+        rename = "basket_cost",
+        deserialize_with = "types::deserialize_money_optional"
+    )]
+    pub basket_cost: Option<Money<'static, iso::Currency>>,
+
+    #[serde(
+        default,
         rename = "previous_amount_due",
-        deserialize_with = "types::deserialize_currency"
+        deserialize_with = "types::deserialize_money_optional"
     )]
-    pub previous_amount_due: Currency,
+    pub previous_amount_due: Option<Money<'static, iso::Currency>>,
 
-    #[serde(default)]
     #[serde(
+        default,
         rename = "donation_amount",
-        deserialize_with = "types::deserialize_currency"
+        deserialize_with = "types::deserialize_money_optional"
     )]
-    pub donation_amount: Currency,
+    pub donation_amount: Option<Money<'static, iso::Currency>>,
 
-    #[serde(default)]
     #[serde(
+        default,
         rename = "charity_received",
-        deserialize_with = "types::deserialize_currency"
+        deserialize_with = "types::deserialize_money_optional"
     )]
-    pub charity_received: Currency,
+    pub charity_received: Option<Money<'static, iso::Currency>>,
 
-    #[serde(default)]
     #[serde(
+        default,
         rename = "total_consigne_amount",
-        deserialize_with = "types::deserialize_currency"
+        deserialize_with = "types::deserialize_money_optional"
     )]
-    pub total_consigne_amount: Currency,
+    pub total_consigne_amount: Option<Money<'static, iso::Currency>>,
 }
 
 #[cfg(test)]
