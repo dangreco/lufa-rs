@@ -23,6 +23,11 @@ pub enum Error {
         backtrace: Backtrace,
     },
 
+    SerdeJson {
+        source: serde_json::Error,
+        backtrace: Backtrace,
+    },
+
     #[snafu(display("Reqwest Error: {}\nFound at {}", source, backtrace))]
     Reqwest {
         source: reqwest::Error,

@@ -3,22 +3,23 @@ mod services;
 
 use std::{collections::HashMap, fmt, sync::Arc};
 
-use error::ReqwestSnafu;
 use reqwest::{
     cookie::{CookieStore, Jar},
     Response,
 };
 use serde::Serialize;
-use services::AuthService;
 use snafu::IntoError;
 use tokio::sync::RwLock;
 
-pub use error::{Error, Result};
+pub use error::*;
+pub use services::*;
 
 pub mod models {
     pub use lufa_models::*;
 }
 
+const NAME: &str = env!("CARGO_PKG_NAME");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 const DEFAULT_API_BASE_URL: &str = "https://montreal.lufa.com";
 
 #[derive(Debug, Clone)]
@@ -93,6 +94,18 @@ impl Lufa {
         return has_state && has_cookie;
     }
 
+    pub async fn user_id(&self) -> Result<String> {
+        let state = self.state.read().await;
+        let user_id = state
+            .clone()
+            .map(|s| s.user_id)
+            .ok_or(LufaSnafu.into_error(LufaError {
+                message: format!("not logged in"),
+            }))?;
+
+        Ok(user_id)
+    }
+
     fn _build_url(&self, path: &str) -> reqwest::Url {
         let base = format!("{}/{}", DEFAULT_API_BASE_URL, &self.language);
         let url = reqwest::Url::parse(base.as_str()).unwrap();
@@ -103,6 +116,7 @@ impl Lufa {
         let res = self
             .client
             .get(self._build_url(path))
+            .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .send()
             .await
             .map_err(|e| ReqwestSnafu.into_error(e.into()))?;
@@ -118,6 +132,7 @@ impl Lufa {
         let res = self
             .client
             .post(self._build_url(path))
+            .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .body(body)
             .send()
             .await
@@ -134,6 +149,7 @@ impl Lufa {
         let res = self
             .client
             .post(self._build_url(path))
+            .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .json(payload)
             .send()
             .await
@@ -150,6 +166,7 @@ impl Lufa {
         let res = self
             .client
             .post(self._build_url(path))
+            .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .form(form)
             .send()
             .await
@@ -160,5 +177,13 @@ impl Lufa {
 
     pub fn auth(&self) -> AuthService {
         AuthService(self)
+    }
+
+    pub fn billing(&self) -> BillingService {
+        BillingService(self)
+    }
+
+    pub fn profile(&self) -> ProfileService {
+        ProfileService(self)
     }
 }
