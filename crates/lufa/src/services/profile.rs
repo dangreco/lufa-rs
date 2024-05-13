@@ -32,6 +32,8 @@ impl<'a> ProfileService<'a> {
     /// }
     /// ```
     pub async fn get(&self) -> Result<models::profile::Profile> {
+        self.0.guard_logged_in().await?;
+
         self.0
             ._post_form(
                 "/users/profileData",

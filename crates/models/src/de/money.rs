@@ -3,7 +3,6 @@
 use rusty_money::{iso, Money};
 use serde::{Deserialize, Deserializer};
 
-
 // Function to parse a Money instance from a North American-styled currency
 // string, i.e. "." for decimal points, "," for thousands separators.
 fn parse_na<'de, D>(s: &str) -> Result<Money<'static, iso::Currency>, D::Error>
@@ -102,30 +101,21 @@ where
 }
 
 // Deserializes a value into a Money instance in CAD
-pub fn deserialize_money<'de, D>(deserializer: D) -> Result<Money<'static, iso::Currency>, D::Error>
+pub fn money<'de, D>(deserializer: D) -> Result<Money<'static, iso::Currency>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum MoneyFormat {
-        String(String),
-        Int(i64),
-        Float(f64),
-    }
-
-    match MoneyFormat::deserialize(deserializer)? {
-        MoneyFormat::Int(n) => Ok(Money::from_major(n, iso::CAD)),
-        MoneyFormat::Float(n) => Ok(Money::from_decimal(
-            n.try_into().map_err(serde::de::Error::custom)?,
-            iso::CAD,
+    match money_optional(deserializer) {
+        Ok(Some(m)) => Ok(m),
+        Ok(None) => Err(serde::de::Error::custom(
+            "expected string, int, float, found null",
         )),
-        MoneyFormat::String(s) => parse_str::<D>(&s),
+        Err(e) => Err(e),
     }
 }
 
 // Optionally deserializes a value into a Money instance in CAD
-pub fn deserialize_money_optional<'de, D>(
+pub fn money_optional<'de, D>(
     deserializer: D,
 ) -> Result<Option<Money<'static, iso::Currency>>, D::Error>
 where
@@ -162,7 +152,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::deserialize_money;
+    use super::money;
     use rusty_money::{iso, Money};
     use serde::Deserialize;
 
@@ -170,7 +160,7 @@ mod tests {
     fn test_deserialize_money() {
         #[derive(Deserialize)]
         struct Price {
-            #[serde(deserialize_with = "deserialize_money")]
+            #[serde(deserialize_with = "money")]
             pub amount: Money<'static, iso::Currency>,
         }
 

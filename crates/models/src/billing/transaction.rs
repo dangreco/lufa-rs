@@ -17,7 +17,7 @@ pub struct Transaction {
     pub order_id: String,
 
     // The final total amount charged in the transaction
-    #[serde(rename = "total", deserialize_with = "de::deserialize_money")]
+    #[serde(rename = "total", deserialize_with = "de::money")]
     pub total: Money<'static, iso::Currency>,
 
     // A short title describing the transaction
@@ -27,7 +27,7 @@ pub struct Transaction {
     // The date at which the transaction was processed
     #[serde(
         rename = "transaction_time",
-        deserialize_with = "de::deserialize_timestamp"
+        deserialize_with = "de::timestamp"
     )]
     pub timestamp: DateTime<Tz>,
 
@@ -41,7 +41,7 @@ pub struct Transaction {
     #[serde(
         default,
         rename = "total_order_amount",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub total_order_amount: Option<Money<'static, iso::Currency>>,
 
@@ -50,7 +50,7 @@ pub struct Transaction {
     #[serde(
         default,
         rename = "basket_cost",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub basket_cost: Option<Money<'static, iso::Currency>>,
 
@@ -58,7 +58,7 @@ pub struct Transaction {
     #[serde(
         default,
         rename = "previous_amount_due",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub previous_amount_due: Option<Money<'static, iso::Currency>>,
 
@@ -66,7 +66,7 @@ pub struct Transaction {
     #[serde(
         default,
         rename = "donation_amount",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub donation_amount: Option<Money<'static, iso::Currency>>,
 
@@ -74,7 +74,7 @@ pub struct Transaction {
     #[serde(
         default,
         rename = "charity_received",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub charity_received: Option<Money<'static, iso::Currency>>,
 
@@ -82,7 +82,7 @@ pub struct Transaction {
     #[serde(
         default,
         rename = "total_consigne_amount",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub total_consigne_amount: Option<Money<'static, iso::Currency>>,
 }

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 // into a HashMap<usize, T>. Sometimes we get
 // both types in a response, so it's necessary
 // to ensure we use a HashMap<usize, T>.
-pub fn deserialize_array_or_object<'de, D, T>(
+pub fn array_or_object<'de, D, T>(
     deserializer: D,
 ) -> Result<HashMap<usize, T>, D::Error>
 where

@@ -21,27 +21,27 @@ pub struct Recipe {
     pub portions: usize,
 
     // The base total price of the recipe
-    #[serde(rename = "price", deserialize_with = "de::deserialize_money")]
+    #[serde(rename = "price", deserialize_with = "de::money")]
     pub price: Money<'static, iso::Currency>,
 
     // The base price per portion of the recipe
     #[serde(
         rename = "price_per_portion",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub price_per_portion: Money<'static, iso::Currency>,
 
     // The active price per portion of the recipe
     #[serde(
         rename = "current_price_per_portion",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub current_price_per_portion: Money<'static, iso::Currency>,
 
     // The active total price of the recipe
     #[serde(
         rename = "current_price",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub current_price: Money<'static, iso::Currency>,
 

@@ -35,7 +35,7 @@ pub struct OrderItem {
     #[serde(
         default,
         rename = "on_sale",
-        deserialize_with = "de::deserialize_bool"
+        deserialize_with = "de::bool"
     )]
     pub on_sale: Option<bool>,
 
@@ -55,28 +55,28 @@ pub struct OrderItem {
     // TODO -- not sure what this is
     #[serde(
         rename = "default_price",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub default_price: Money<'static, iso::Currency>,
 
     // The product price that is shown on the marketplace
     #[serde(
         rename = "defined_price",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub defined_price: Money<'static, iso::Currency>,
 
     // TODO -- not sure what this is
     #[serde(
         rename = "price",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub price: Money<'static, iso::Currency>,
 
     // TODO -- not sure what this is
     #[serde(
         rename = "paid_price",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub paid_price: Money<'static, iso::Currency>,
 
@@ -84,7 +84,7 @@ pub struct OrderItem {
     #[serde(
         default,
         rename = "avg_p_p",
-        deserialize_with = "de::deserialize_money_optional"
+        deserialize_with = "de::money_optional"
     )]
     pub ppu_price: Option<Money<'static, iso::Currency>>,
 

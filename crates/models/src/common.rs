@@ -13,3 +13,9 @@ pub struct PerUserForm {
     #[serde(rename = "user_id")]
     pub user_id: String,
 }
+
+#[derive(Debug, Serialize)]
+pub struct PerOrderForm {
+    #[serde(rename = "order_id")]
+    pub order_id: String,
+}

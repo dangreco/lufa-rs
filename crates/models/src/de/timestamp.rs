@@ -1,75 +1,86 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use chrono_tz::{America, Tz};
-use serde::de::{Deserializer, Visitor};
+use serde::{de::Deserializer, Deserialize};
 
-macro_rules! timestamp {
-    ($i:ident, $iv:ident, $t:ty, $pattern:literal, $parse:expr, $de:ident) => {
-        pub type $i = $t;
-        pub struct $iv;
-
-        impl<'de> Visitor<'de> for $iv {
-            type Value = $i;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str(&format!(
-                    "a str/string representing a timestamp in the format: {}",
-                    $pattern
-                ))
-            }
-
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                $parse(v)
-            }
-
-            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                self.visit_str(v.as_str())
-            }
-        }
-
-        pub fn $de<'de, D>(deserializer: D) -> Result<$i, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            deserializer.deserialize_any($iv)
-        }
-    };
+pub fn date<'de, D>(deserializer: D) -> Result<NaiveDate, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    match date_optional(deserializer) {
+        Ok(Some(d)) => Ok(d),
+        Ok(None) => Err(serde::de::Error::custom("expected string, found null")),
+        Err(e) => Err(e),
+    }
 }
 
-timestamp!(
-    Timestamp,
-    TimestampVisitor,
-    DateTime<Tz>,
-    "YYYY-mm-dd HH:MM:SS",
-    |s: &str| {
-        let date = NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S")
-            .map_err(E::custom)?
-            .and_local_timezone(America::Montreal)
-            .unwrap();
+pub fn date_optional<'de, D>(deserializer: D) -> Result<Option<NaiveDate>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum DateOrNull {
+        String(String),
+        Null,
+    }
 
-        Ok(date)
-    },
-    deserialize_timestamp
-);
+    match DateOrNull::deserialize(deserializer)? {
+        DateOrNull::String(s) => {
+            let pattern = if s.chars().next().unwrap().is_alphabetic() {
+                "%B %d, %Y"
+            } else {
+                "%Y-%m-%d"
+            };
 
-timestamp!(
-    Date,
-    DateVisitor,
-    NaiveDate,
-    "YYYY-mm-dd or Month dd, YYYY",
-    |s: &str| {
-        let pattern = if s.chars().next().unwrap().is_alphabetic() {
-            "%B %d, %Y"
-        } else {
-            "%Y-%m-%d"
-        };
+            NaiveDate::parse_from_str(&s, pattern)
+                .map(Some)
+                .map_err(serde::de::Error::custom)
+        }
+        DateOrNull::Null => Ok(None),
+    }
+}
 
-        NaiveDate::parse_from_str(s, pattern).map_err(E::custom)
-    },
-    deserialize_date
-);
+pub fn timestamp<'de, D>(deserializer: D) -> Result<DateTime<Tz>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    match timestamp_optional(deserializer) {
+        Ok(Some(t)) => Ok(t),
+        Ok(None) => Err(serde::de::Error::custom("expected string, found null")),
+        Err(e) => Err(e),
+    }
+}
+
+pub fn timestamp_optional<'de, D>(deserializer: D) -> Result<Option<DateTime<Tz>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum TimestampOrNull {
+        String(String),
+        Null,
+    }
+
+    match TimestampOrNull::deserialize(deserializer)? {
+        TimestampOrNull::String(s) => {
+            let timestamp = s.as_str();
+
+            regexm::regexm!(match timestamp {
+                r#"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"# => {
+                    let naive = match timestamp {
+                        "0000-00-00 00:00:00" => NaiveDateTime::MIN,
+                        t => NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S")
+                            .map_err(serde::de::Error::custom)?,
+                    };
+
+                    let datetime = naive.and_local_timezone(America::Montreal).unwrap();
+
+                    Ok(Some(datetime))
+                }
+                _ => Err(serde::de::Error::custom("invalid format")),
+            })
+        }
+        TimestampOrNull::Null => Ok(None),
+    }
+}

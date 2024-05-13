@@ -1,17 +1,19 @@
 mod error;
+mod language;
 mod services;
 
-use std::{collections::HashMap, fmt, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use reqwest::{
     cookie::{CookieStore, Jar},
-    Response,
+    Response, Url,
 };
 use serde::Serialize;
 use snafu::IntoError;
 use tokio::sync::RwLock;
 
 pub use error::*;
+pub use language::*;
 pub use services::*;
 
 pub mod models {
@@ -21,21 +23,6 @@ pub mod models {
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const DEFAULT_API_BASE_URL: &str = "https://montreal.lufa.com";
-
-#[derive(Debug, Clone)]
-pub enum Language {
-    English,
-    French,
-}
-
-impl fmt::Display for Language {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::English => write!(f, "en"),
-            Self::French => write!(f, "fr"),
-        }
-    }
-}
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -69,7 +56,7 @@ impl Lufa {
     }
 
     fn _cookies(&self) -> HashMap<String, String> {
-        let cookie_str = match self.jar.cookies(&self._build_url("")) {
+        let cookie_str = match self.jar.cookies(&self._build_url("").unwrap()) {
             Some(hv) => hv.to_str().unwrap().to_string(),
             None => String::default(),
         };
@@ -85,7 +72,16 @@ impl Lufa {
         cookies
     }
 
-    pub async fn is_logged_in(&self) -> bool {
+    pub(crate) async fn guard_logged_in(&self) -> Result<()> {
+        match self.is_logged_in().await {
+            true => Ok(()),
+            false => Err(LufaSnafu.into_error(LufaError {
+                message: format!("not logged in"),
+            })),
+        }
+    }
+
+    pub(crate) async fn is_logged_in(&self) -> bool {
         let has_state = self.state.read().await.is_some();
 
         let cookies = self._cookies();
@@ -94,7 +90,7 @@ impl Lufa {
         return has_state && has_cookie;
     }
 
-    pub async fn user_id(&self) -> Result<String> {
+    pub(crate) async fn user_id(&self) -> Result<String> {
         let state = self.state.read().await;
         let user_id = state
             .clone()
@@ -106,16 +102,18 @@ impl Lufa {
         Ok(user_id)
     }
 
-    fn _build_url(&self, path: &str) -> reqwest::Url {
-        let base = format!("{}/{}", DEFAULT_API_BASE_URL, &self.language);
-        let url = reqwest::Url::parse(base.as_str()).unwrap();
-        url.join(path).unwrap()
+    fn _build_url(&self, path: &str) -> Result<reqwest::Url> {
+        let path: &str = path.trim_start_matches('/');
+        let language: &str = self.language.into();
+        let full: String = format!("{}/{}/{}", DEFAULT_API_BASE_URL, language, path);
+
+        Url::parse(&full).map_err(|e| UrlParseSnafu.into_error(e.into()))
     }
 
     pub(crate) async fn _get(&self, path: &str) -> Result<Response> {
         let res = self
             .client
-            .get(self._build_url(path))
+            .get(self._build_url(path)?)
             .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .send()
             .await
@@ -131,7 +129,7 @@ impl Lufa {
     ) -> Result<Response> {
         let res = self
             .client
-            .post(self._build_url(path))
+            .post(self._build_url(path)?)
             .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .body(body)
             .send()
@@ -148,7 +146,7 @@ impl Lufa {
     ) -> Result<Response> {
         let res = self
             .client
-            .post(self._build_url(path))
+            .post(self._build_url(path)?)
             .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .json(payload)
             .send()
@@ -163,12 +161,17 @@ impl Lufa {
         path: &str,
         form: &Form,
     ) -> Result<Response> {
-        let res = self
+        let req = self
             .client
-            .post(self._build_url(path))
+            .post(self._build_url(path)?)
             .header("User-Agent", format!("{}/{}", NAME, VERSION))
             .form(form)
-            .send()
+            .build()
+            .unwrap();
+
+        let res = self
+            .client
+            .execute(req)
             .await
             .map_err(|e| ReqwestSnafu.into_error(e.into()))?;
 

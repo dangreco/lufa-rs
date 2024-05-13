@@ -19,6 +19,8 @@ impl<'a> BillingService<'a> {
     /// thus it is not marked as public.
     /// ```
     async fn get_billing_data(&self) -> Result<models::billing::BillingData> {
+        self.0.guard_logged_in().await?;
+
         self.0
             ._post_form(
                 "/users/billingData",

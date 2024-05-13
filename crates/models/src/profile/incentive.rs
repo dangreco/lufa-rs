@@ -48,35 +48,35 @@ pub struct IncentiveData {
     // The total amount spent this year
     #[serde(
         rename = "amount_spent",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub amount_spent: Money<'static, iso::Currency>,
 
     // The current amount earned for the giveback program
     #[serde(
         rename = "current_earnings",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub current_earnings: Money<'static, iso::Currency>,
 
     // The projected amount earnined for the giveback program
     #[serde(
         rename = "projected_earnings",
-        deserialize_with = "de::deserialize_money"
+        deserialize_with = "de::money"
     )]
     pub projected_earnings: Money<'static, iso::Currency>,
 
     // The datetime at which the statistics were generated
     #[serde(
         rename = "created_at",
-        deserialize_with = "de::deserialize_timestamp"
+        deserialize_with = "de::timestamp"
     )]
     pub created_at: DateTime<Tz>,
 
     // The datetime at which the statistics were updated
     #[serde(
         rename = "updated_at",
-        deserialize_with = "de::deserialize_timestamp"
+        deserialize_with = "de::timestamp"
     )]
     pub updated_at: DateTime<Tz>,
 

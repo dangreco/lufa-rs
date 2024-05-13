@@ -9,7 +9,7 @@ use serde::{Deserialize, Deserializer};
 //   3. Decimal values s.t. 0.0 => Some(false), 1.0 => Some(true)
 //   4. Null values => None
 // All other values error.
-pub fn deserialize_bool<'de, D>(deserializer: D) -> Result<Option<bool>, D::Error>
+pub fn bool<'de, D>(deserializer: D) -> Result<Option<bool>, D::Error>
 where
     D: Deserializer<'de>,
 {

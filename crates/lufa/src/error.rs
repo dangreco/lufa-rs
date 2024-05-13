@@ -18,6 +18,11 @@ pub enum Error {
         backtrace: Backtrace,
     },
 
+    UrlParse {
+        source: url::ParseError,
+        backtrace: Backtrace,
+    },
+
     SerdePhp {
         source: serde_php::Error,
         backtrace: Backtrace,
